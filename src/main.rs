@@ -1,6 +1,19 @@
+use regex::Regex;
+use clap::{App, Arg};
 fn main() {
+
+    let args = App::new("grsp")
+        .version("0.1")
+        .about("searches for patterns")
+        .arg(Arg::with_name("pattern")
+            .help("The pattern to search for")
+            .takes_value(true)
+            .required(true))
+        .get_matches();
+
+    let pattern = args.value_of("pattern").unwrap();
     let ctx_lines = 2;
-    let search_term = "strong";
+    let re = Regex::new(pattern).unwrap();
     let quote = "\
 If you set yourself to your present task along the path of true reason, with all determination, 
 vigour, and good will: if you admit no distraction, but keep your own divinity pure and 
@@ -14,7 +27,7 @@ let mut tags: Vec<usize> = vec![];
 //this will contain a vector per match to hold context lines
 let mut ctx: Vec<Vec<(usize, String)>> = vec![];
 for (i ,line) in quote.lines().enumerate(){
-        if line.contains(search_term){
+        if re.is_match(line){
             tags.push(i);
 
             let v = Vec::with_capacity(2*ctx_lines + 1);

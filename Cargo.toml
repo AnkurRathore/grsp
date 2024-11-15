@@ -1,6 +1,9 @@
 [package]
 name = "grsp"
 version = "0.1.0"
+authors = ["Ankur Rathore"]
 edition = "2021"
 
 [dependencies]
+clap = "2"
+regex = "1"
