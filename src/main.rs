@@ -1,3 +1,6 @@
+use std::fs::File;
+use std::io::BufReader;
+use std::io::prelude::*;
 use regex::Regex;
 use clap::{App, Arg};
 fn main() {
@@ -9,49 +12,73 @@ fn main() {
             .help("The pattern to search for")
             .takes_value(true)
             .required(true))
+        .arg(Arg::with_name("input")
+            .help("File to search")
+            .takes_value(true)
+            .required(true))
         .get_matches();
 
     let pattern = args.value_of("pattern").unwrap();
+    let input  = args.value_of("input").unwrap();
+    let f = File::open(input).unwrap();
+    let reader = BufReader::new(f);
     let ctx_lines = 2;
     let re = Regex::new(pattern).unwrap();
-    let quote = "\
-If you set yourself to your present task along the path of true reason, with all determination, 
-vigour, and good will: if you admit no distraction, but keep your own divinity pure and 
-standing strong, as if you had to surrender it right now; if you grapple this to you, 
-expecting nothing, shirking nothing, but self-content with each present action taken in 
-accordance with nature and a heroic truthfulness in all that you say and mean 
-then you will lead a good life. And nobody is able to stop you";
+    
 
 //tags holds line numbers where there is a match
 let mut tags: Vec<usize> = vec![];
 //this will contain a vector per match to hold context lines
 let mut ctx: Vec<Vec<(usize, String)>> = vec![];
-for (i ,line) in quote.lines().enumerate(){
-        if re.is_match(line){
-            tags.push(i);
-
-            let v = Vec::with_capacity(2*ctx_lines + 1);
-            ctx.push(v);
-            
+for (i ,line_result) in reader.lines().enumerate(){
+    match line_result{
+        Ok(line) => {
+            if re.is_match(&line){
+                tags.push(i);
+    
+                let v = Vec::with_capacity(2*ctx_lines + 1);
+                ctx.push(v);
+                
+            }
         }
+        Err(e)=>{
+            eprintln!("Error reading line {}: {}", i+1, e);
+            return;
+        }
+       
     }
+
+    }        
 
     //if no match, exit early
     if tags.is_empty(){
         return;
     }
 
-    for (i, line) in quote.lines().enumerate(){
-        for (j, tag) in tags.iter().enumerate(){
-            let lower_bound = tag.saturating_sub(ctx_lines);
-            let upper_bound = tag + ctx_lines;
+    // Reset the reader to iterate through the lines again
+    let f = File::open(input).unwrap();
+    let reader = BufReader::new(f);
 
-            if (i >= lower_bound) && (i<= upper_bound){
-                let line_as_string = String::from(line);
-                let local_ctx = (i, line_as_string);
-                ctx[j].push(local_ctx);
+    for (i, line_result) in reader.lines().enumerate(){
+        match line_result{
+            Ok(line) => {
+                for (j, tag) in tags.iter().enumerate(){
+                    let lower_bound = tag.saturating_sub(ctx_lines);
+                    let upper_bound = tag + ctx_lines;
+        
+                    if (i >= lower_bound) && (i<= upper_bound){
+                        let local_ctx = (i, line.clone());
+                        ctx[j].push(local_ctx);
+                    }
+                }
+
+            }
+            Err(e) => {
+                eprintln!("Error reading from line {}: {}", i +1, e);
+                return;
             }
         }
+       
     }
 
     for local_ctx in ctx.iter(){
