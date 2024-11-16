@@ -1,0 +1,52 @@
+# Compiled binary and libraries
+/target/
+
+# Build artifacts
+**/*.rs.bk
+
+# Cargo files
+**/Cargo.lock
+**/.cargo/
+**/Cargo.toml.orig
+
+# IDEs and editors
+# IntelliJ / Rust plugin
+.idea/
+/*.iml
+
+# VS Code
+.vscode/
+/*.code-workspace
+
+# vim
+*.swp
+*.swo
+
+# Emacs
+*~
+
+# Mac OS
+.DS_Store
+
+# Windows
+Thumbs.db
+desktop.ini
+
+# Linux
+*.~lock.*
+
+# Temporary files and logs
+*.log
+*.tmp
+*.bak
+*.old
+
+# Node (in case of hybrid Rust/Node projects)
+node_modules/
+
+# Coverage files
+/coverage/
+/*.profraw
+
+# Test outputs
+/tests/output/
